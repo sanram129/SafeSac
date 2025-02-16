@@ -43,8 +43,8 @@ void setup() {
   pinMode(REED, INPUT);
 
   Serial.begin(115200);
-  WiFi.begin("iPhone J", "Hello123"); // Wi-Fi Connection
-  Blynk.begin(BLYNK_AUTH_TOKEN, "iPhone J", "Hello123", "blynk.cloud", 80);
+  WiFi.begin("SM-A146W3835", "mhaydyb6wh98pag"); // Wi-Fi Connection
+  Blynk.begin(BLYNK_AUTH_TOKEN, "SM-A146W3835", "mhaydyb6wh98pag", "blynk.cloud", 80);
 
   Serial.println("Connecting to Blynk...");
   while (!Blynk.connected()) {
