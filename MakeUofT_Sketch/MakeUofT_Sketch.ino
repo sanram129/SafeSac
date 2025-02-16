@@ -17,7 +17,7 @@ double acc_mag(sensors_event_t a) {
 }
 
 // How long the beep remains after steal detected (ms)
-const int StealDelay = 10000;
+const int StealDelay = 5000;
 
 // Variables to track acceleration
 double pastAcc = 0.0;
