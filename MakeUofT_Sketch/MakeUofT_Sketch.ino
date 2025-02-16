@@ -27,6 +27,7 @@ bool systemIsEnabled = true;
 sensors_event_t a, g, temp;
 
 void setup() {
+  pinMode(BUZZER_1, OUTPUT);
     Serial.begin(115200);
   while (!Serial)
     delay(10); // will pause Zero, Leonardo, etc until serial console opens
@@ -121,29 +122,16 @@ void loop() {
 
     Serial.print(currentAcc);
     Serial.println(" m/s^2");
-
+    Serial.println(fabs(currentAcc - pastAcc));
     Serial.println("");
 
     if (fabs(currentAcc - pastAcc) >= 2) {
         // Bag has moved; set off buzzer
         digitalWrite(BUZZER_1, HIGH);
     } else {
-        digitalWrite(BUZZER_1, LOW)
+        digitalWrite(BUZZER_1, LOW);
     }
 
-    delay(1000);
+    delay(200);
   }
 }
-// if (2 >= abs(final acceleration - initital acceleration)): <-- bag has not moved
-  // while (1):
-    // initial acceleration = find acceleration;
-    /*
-    delay(1000);
-    final acceleration = find acceleration;
-
-    if (final acceleration =initial acceleration):
-      continue;
-    else if (2 >= abs(final acceleration - initital acceleration))
-
-
-  }
