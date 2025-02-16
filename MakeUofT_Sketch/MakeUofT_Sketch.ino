@@ -11,8 +11,8 @@
 #include <WiFi.h>
 #include <BlynkSimpleEsp32.h>
 
-char ssid[] = "SM-A146W3835";     
-char pass[] = "mhaydyb6wh98pag";
+char ssid[] = "iPhone J";     
+char pass[] = "Hello123";
 
 // Define pin macros
 #define IMU_SDA 21
@@ -27,8 +27,22 @@ double acc_mag(sensors_event_t a) {
   return sqrt(pow(a.acceleration.x, 2) + pow(a.acceleration.y, 2) + pow(a.acceleration.z, 2));
 }
 
+void beep_blink(int ms) {
+  for (int i = 0; i < ms/400; i++) {
+    digitalWrite(BUZZER_1, HIGH);
+    delay(200);
+    digitalWrite(BUZZER_1, LOW);
+    if ((i + 1) != ms/400) {
+      delay(200);
+    }
+  }
+}
+
 // How long the beep remains after steal detected (ms)
 const int StealDelay = 5000;
+
+// How long the beep remains after bag opened
+const int openDelay = 2000;
 
 // Variables to track acceleration
 double pastAcc = 0.0;
@@ -41,6 +55,20 @@ bool alarmTriggered = false; // ✅ New bool to track alarm status
 
 // Variables to track IMU acceleration, gyro and temp (latter 2 not used)
 sensors_event_t a, g, temp;
+
+// Function to handle Secure Mode toggle from Blynk app (V1)
+BLYNK_WRITE(V1) {  
+  systemIsEnabled = param.asInt();  // Read value from Blynk switch (1 = ON, 0 = OFF)
+  
+  // Print update to Serial Monitor
+  if (systemIsEnabled) {
+    Serial.println("🔒 Secure Mode ACTIVATED - Your bag is now protected.");
+    Blynk.logEvent("secure_mode_on", "🔒 Your bag is now secured!");
+  } else {
+    Serial.println("⚠️ Secure Mode DEACTIVATED - Your bag is unprotected!");
+    Blynk.logEvent("secure_mode_off", "⚠️ Your bag is unprotected!");
+  }
+}
 
 void setup() {
   pinMode(BUZZER_1, OUTPUT);
@@ -161,6 +189,7 @@ void loop() {
     if ((digitalRead(REED) == 0) && !alarmTriggered) {
         digitalWrite(BUZZER_1, HIGH);
         Blynk.logEvent("alarm_triggered", "⚠️ The bag was opened! Alarm activated!");
+        beep_blink(openDelay);
         alarmTriggered = true;
     } else {
         digitalWrite(BUZZER_1, LOW);
