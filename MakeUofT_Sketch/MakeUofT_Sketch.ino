@@ -31,7 +31,9 @@ sensors_event_t a, g, temp;
 
 void setup() {
   pinMode(BUZZER_1, OUTPUT);
-    Serial.begin(115200);
+  pinMode(REED, INPUT);
+
+  Serial.begin(115200);
   while (!Serial)
     delay(10); // will pause Zero, Leonardo, etc until serial console opens
 
@@ -133,6 +135,13 @@ void loop() {
         digitalWrite(BUZZER_1, HIGH);
 
         delay(StealDelay - 200);
+    } else {
+        digitalWrite(BUZZER_1, LOW);
+    }
+
+    // Check if reed switch is opened (this means magnet is close; bag opened)
+    if (digitalRead(REED) == 0) {
+        digitalWrite(BUZZER_1, HIGH);
     } else {
         digitalWrite(BUZZER_1, LOW);
     }
