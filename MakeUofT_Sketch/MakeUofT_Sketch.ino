@@ -3,6 +3,17 @@
 #include <Wire.h>
 #include <math.h>
 
+#define BLYNK_AUTH_TOKEN "kN_8t3O0EIu__VAMdNWd0HRhhv0bCbAl"
+#define BLYNK_TEMPLATE_ID "TMPL2Faj9X"
+#define BLYNK_TEMPLATE_NAME "TEST"
+
+#define BLYNK_PRINT Serial
+#include <WiFi.h>
+#include <BlynkSimpleEsp32.h>
+
+char ssid[] = "SM-A146W3835";     
+char pass[] = "mhaydyb6wh98pag";
+
 // Define pin macros
 #define IMU_SDA 21
 #define IMU_SCL 22
@@ -25,6 +36,8 @@ double currentAcc = 0.0;
 
 // Management variables
 bool systemIsEnabled = true;
+bool bagMoved = false;      // ✅ New bool to track movement
+bool alarmTriggered = false; // ✅ New bool to track alarm status
 
 // Variables to track IMU acceleration, gyro and temp (latter 2 not used)
 sensors_event_t a, g, temp;
@@ -34,6 +47,7 @@ void setup() {
   pinMode(REED, INPUT);
 
   Serial.begin(115200);
+  Blynk.begin(BLYNK_AUTH_TOKEN, ssid, pass, "blynk.cloud", 80);
   while (!Serial)
     delay(10); // will pause Zero, Leonardo, etc until serial console opens
 
@@ -112,6 +126,8 @@ void setup() {
 }
 
 void loop() {
+  // Blynk.logEvent("bag_moved", "🚨 Your bag was moved!");
+  // Blynk.logEvent("alarm_triggered", "⚠️ The bag was opened! Alarm activated!");
   while (systemIsEnabled) {
     /* Get new sensor events with the readings */
     mpu.getEvent(&a, &g, &temp);
@@ -130,20 +146,25 @@ void loop() {
     Serial.println(fabs(currentAcc - pastAcc));
     Serial.println("");
 
-    if (fabs(currentAcc - pastAcc) >= 2) {
+    if ((fabs(currentAcc - pastAcc) >= 2) && !bagMoved) {
         // Bag has moved; set off buzzer
         digitalWrite(BUZZER_1, HIGH);
-
+        Blynk.logEvent("bag_moved", "🚨 Your bag was moved!");
         delay(StealDelay - 200);
+        bagMoved = true;
     } else {
         digitalWrite(BUZZER_1, LOW);
+        bagMoved = false;
     }
 
     // Check if reed switch is opened (this means magnet is close; bag opened)
-    if (digitalRead(REED) == 0) {
+    if ((digitalRead(REED) == 0) && !alarmTriggered) {
         digitalWrite(BUZZER_1, HIGH);
+        Blynk.logEvent("alarm_triggered", "⚠️ The bag was opened! Alarm activated!");
+        alarmTriggered = true;
     } else {
         digitalWrite(BUZZER_1, LOW);
+        alarmTriggered = false;
     }
 
     delay(200);
