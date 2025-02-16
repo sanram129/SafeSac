@@ -16,6 +16,16 @@ double acc_mag(sensors_event_t a) {
   return sqrt(pow(a.acceleration.x, 2) + pow(a.acceleration.y, 2) + pow(a.acceleration.z, 2));
 }
 
+// Variables to track acceleration
+double pastAcc = 0.0;
+double currentAcc = 0.0;
+
+// Management variables
+bool systemIsEnabled = true;
+
+// Variables to track IMU acceleration, gyro and temp (latter 2 not used)
+sensors_event_t a, g, temp;
+
 void setup() {
     Serial.begin(115200);
   while (!Serial)
@@ -96,19 +106,34 @@ void setup() {
 }
 
 void loop() {
-  /* Get new sensor events with the readings */
-  sensors_event_t a, g, temp;
-  mpu.getEvent(&a, &g, &temp);
+  while (systemIsEnabled) {
+    /* Get new sensor events with the readings */
+    mpu.getEvent(&a, &g, &temp);
 
-  /* Print out the values */
-  Serial.print("Acceleration magnitude: ");
-  double mag = acc_mag(a);
-  Serial.print(mag);
-  Serial.println(" m/s^2");
+    /* Print out the values */
+    Serial.print("Acceleration magnitude: ");
+    if (pastAcc == 0) {
+        pastAcc = acc_mag(a);
+    } else {
+        pastAcc = currentAcc;
+    }
+    currentAcc = acc_mag(a);
 
-  Serial.println("");
-  delay(500);
+    Serial.print(currentAcc);
+    Serial.println(" m/s^2");
 
+    Serial.println("");
+
+    if (fabs(currentAcc - pastAcc) >= 2) {
+        // Bag has moved; set off buzzer
+        digitalWrite(BUZZER_1, HIGH);
+    } else {
+        digitalWrite(BUZZER_1, LOW)
+    }
+
+    delay(1000);
+  }
+}
 // if (2 >= abs(final acceleration - initital acceleration)): <-- bag has not moved
   // while (1):
     // initial acceleration = find acceleration;
