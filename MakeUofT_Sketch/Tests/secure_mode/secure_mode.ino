@@ -12,9 +12,11 @@ char pass[] = "Hello123";
 bool secureMode = false; // Secure Mode status
 
 // Function to handle Secure Mode toggle from Blynk app (V1)
-BLYNK_WRITE(V1) {  
+BLYNK_WRITE(V3) {  
   secureMode = param.asInt();  // Read value from Blynk switch (1 = ON, 0 = OFF)
   
+  Serial.println(secureMode);
+
   // Print update to Serial Monitor
   if (secureMode) {
     Serial.println("🔒 Secure Mode ACTIVATED - Your bag is now protected.");
